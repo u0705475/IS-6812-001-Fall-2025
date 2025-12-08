@@ -74,6 +74,67 @@ Notes about data usage
 - The analysis merges bureau.csv with application_train.csv and application_test.csv as part of feature construction. Do not commit raw data to this repository — keep raw files in data/raw/ locally and out of version control.
 - For dataset retrieval instructions (Canvas link and any access notes), see data/README.md.
 
+Business problem — summary
+--------------------------
+Lenders need to estimate the probability that an individual borrower will default on a loan so they can make better underwriting, pricing, and portfolio-management decisions. This project uses the Home Credit dataset to build and compare credit-risk models that predict the binary outcome TARGET (default vs. non-default) for retail loan applicants. Improving the accuracy and stability of default predictions helps the business:
+
+- Reduce expected credit losses by declining or repricing high-risk applicants.
+- Increase approval rates for low-risk applicants by enabling more confident underwriting.
+- Prioritize collections and risk-mitigation efforts on accounts with higher predicted loss probability.
+- Evaluate model fairness and feature-driven risk signals to reduce unintended bias.
+
+Project objective
+-----------------
+The objective of this capstone is to produce a reproducible, well-documented pipeline that demonstrates how to go from raw Home Credit data to evaluated credit-risk models and a candidate production artifact. Concretely, the project aims to:
+
+1. Prepare and document a reproducible data-processing pipeline that merges application and bureau records and produces tidy, model-ready datasets.
+2. Establish a baseline model and iteratively improve it using feature engineering and model tuning (examples: logistic regression baseline, random forest, gradient boosting).
+3. Evaluate models primarily by AUC using 5‑fold cross‑validation, compare performance across algorithms, and produce an ensemble that aggregates strengths of individual models.
+4. Deliverables:
+   - Reproducible preprocessing, training, and evaluation scripts under src/.
+   - Notebooks and HTML reports containing EDA, feature engineering rationale, and modeling experiments under notebooks/ and reports/.
+   - A model artifact (models/*.joblib) and a short “how to use” guide for generating predictions.
+   - A README and data/README.md documenting data acquisition, expected inputs, environment, and usage.
+5. Success criteria:
+   - Models achieve the reported validation AUCs (baseline 0.5498; tuned LR 0.7508; RF 0.7423; GBM 0.7580; ensemble 0.7570) on held-out folds in the 5‑fold CV setup, and the code reproduces these experiments locally.
+   - Code is organized, tested (where feasible), and contains clear instructions so another analyst can reproduce preprocessing, training, and evaluation steps.
+
+Contributions & role
+--------------------
+Sina Odejinmi (Author: u0705475) led and contributed to the EDA and model validity work for this project. Specific contributions included:
+
+- Designing and executing exploratory data analysis methods to surface data issues and candidate features.
+- Validating model behavior and using diagnostic tools (confusion matrix, calibration plots) to ensure models behaved as expected across score ranges.
+- Using the confusion matrix to help identify an operational probability cutoff with the least false positive rate consistent with business profitability targets.
+- Documenting preprocessing decisions and the evaluation approach used to select the final candidate model.
+
+Group solution and operational decision
+--------------------------------------
+Our group's solution to the business problem was to construct several candidate models (baseline logistic regression, tuned logistic regression, random forest, gradient boosting, and an ensemble) and select the single model with the highest validation AUC to generate predictions on the test set.
+
+Decision rule and operational cutoff:
+- We used a probability cutoff of 0.5 to identify high-risk applicants. With this cutoff we rejected (declined) the riskiest top ~5% of applicants by predicted probability, prioritizing reduction in actual defaults while controlling false positives (applicants predicted to default but who would have repaid).
+
+Observed impact of the chosen cutoff and policy:
+- Overall default rate reduced from 8.0% to 6.9% after applying the cutoff.
+- Using the 0.5 cutoff:
+  - Removes ~20% of actual defaulters from the active portfolio (reduction in number of defaulters).
+  - Avoids approximately $16M in annual losses per 100,000 loans (estimated loss avoidance based on modeled exposure and loss severity assumptions).
+  - Approves ~95% of applicants (approval rate after rejecting the top ~5% highest-risk applicants).
+
+Notes on interpretation and deployment
+- The numbers above are summary statistics from our evaluation and depend on assumptions about loan exposure, average loss given default, and the distribution of applicant risk in the deployment population. Before operational deployment, validate these savings with financial/legal stakeholders and perform a sensitivity analysis on cutoff choice (e.g., examine tradeoffs at cutoffs 0.4, 0.5, 0.6).
+- Monitor post-deployment metrics (default rate, approval rate, false positive rate, income and demographic impacts) and retrain models periodically to account for data drift.
+- Consider adding a business-level wrapper that can vary the cutoff dynamically based on portfolio targets (loss budget, approval volume) and fairness constraints.
+
+Challenges and limitations
+--------------------------
+Key challenges the group encountered during the project:
+
+- High missingness: many raw predictors had missing values approaching ~70%, which made feature engineering and model stability challenging. We used imputation and aggregation strategies, but high missingness limited which predictors could be used reliably.
+- Feature grouping: we were unable to fully explore grouping predictors into small, similar groups and performing group-wise importance/drop tests to remove low-impact groups; this remains an area for future work.
+- Cross-tool workflow friction: some Python code (local analysis scripts) did not run cleanly on the R-focused platform used by other team members. To maintain progress, the group shifted to using the R platform for the remaining work and results integration, which required reimplementation and cross-checks of key steps.
+
 How to reproduce the analysis
 -----------------------------
 - Preprocess:
@@ -136,7 +197,7 @@ This section gives concrete, tested commands and describes inputs/outputs for co
 
 Tips and notes
 - If a script expects a filename that differs from what you downloaded, either rename the CSVs in data/raw/ or update the filename references inside src/preprocess.py.
-- The 5‑fold cross‑validation used for the reported experiments trades off runtime vs. estimate stability; for final model training consider increasing folds if computational resources allow.
+- The 5‑fold cross‑validation used for the reported experiments trades off runtime vs. stability; for final model training consider increasing folds if computational resources allow.
 - Keep data/ listed in .gitignore to avoid committing sensitive or large files.
 
 Summary of results
@@ -158,6 +219,12 @@ Recommendations / notes
 - Add a brief Methods section describing preprocessing, resampling, and evaluation metrics (5‑fold CV used for experiments reported).
 - Document hyperparameters and cross-validation scheme used for final models (best params, folds, random seed).
 - Add a small "How to use" section that explains how to run a script to get the final model predictions and where outputs are saved (see above).
+
+Contributors
+------------
+- Miles McCunniff
+- Sebastian Perez Parra
+- Sina Odejinmi
 
 Contact
 -------

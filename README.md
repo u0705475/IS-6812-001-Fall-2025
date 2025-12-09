@@ -135,70 +135,7 @@ Key challenges the group encountered during the project:
 - Feature grouping: we were unable to fully explore grouping predictors into small, similar groups and performing group-wise importance/drop tests to remove low-impact groups; this remains an area for future work.
 - Cross-tool workflow friction: some Python code (local analysis scripts) did not run cleanly on the R-focused platform used by other team members. To maintain progress, the group shifted to using the R platform for the remaining work and results integration, which required reimplementation and cross-checks of key steps.
 
-How to reproduce the analysis
------------------------------
-- Preprocess:
-  python -m src.preprocess --input data/raw --output data/processed
 
-- Train:
-  python -m src.train --data data/processed --model-dir models
-
-- Evaluate:
-  python -m src.evaluate --data data/processed --model models/logistic_model.joblib
-
-- Or open and run the notebooks in notebooks/ in order:
-  1. notebooks/eda.ipynb  (exploratory analysis)
-  2. notebooks/feature_engineering.ipynb
-  3. notebooks/modeling.ipynb
-
-How to use
-----------
-This section gives concrete, tested commands and describes inputs/outputs for common tasks.
-
-1) Prepare data (manual step)
-   - Download the instructor-provided Home Credit CSVs (see data/README.md) and place them into:
-     data/raw/application_train.csv
-     data/raw/application_test.csv
-     data/raw/bureau.csv
-
-2) Preprocess (creates processed CSVs)
-   - Run the preprocessing step to produce processed files used by the models:
-     python -m src.preprocess --input data/raw --output data/processed
-   - Expected outputs:
-     - data/processed/application_train_processed.csv
-     - data/processed/application_test_processed.csv
-     - additional feature files depending on preprocessing steps (e.g., bureau_aggregates.csv)
-   - If filenames differ, either rename your CSVs in data/raw/ or update the filename checks in src/preprocess.py.
-
-3) Train (produces model artifacts)
-   - Train models using the processed training data:
-     python -m src.train --data data/processed --model-dir models
-   - Notes:
-     - The experiments reported in this repository were evaluated using 5‑fold cross‑validation to balance runtime and estimate stability. The training scripts can be extended to change the number of folds; check src/train.py for available CLI options or add a --cv flag if needed.
-     - Training produces a model artifact saved under models/, for example:
-       models/logistic_model.joblib
-
-4) Evaluate (compute metrics on processed dataset or test set)
-   - Evaluate a saved model:
-     python -m src.evaluate --data data/processed --model models/logistic_model.joblib
-   - The evaluation step prints metrics (AUC) and can be extended to save detailed reports or plots under reports/.
-
-5) Quick example (Windows PowerShell)
-   - Activate venv:
-     .venv\Scripts\Activate.ps1
-   - Install deps:
-     pip install -r requirements.txt
-   - Preprocess:
-     python -m src.preprocess --input data/raw --output data/processed
-   - Train:
-     python -m src.train --data data/processed --model-dir models
-   - Evaluate:
-     python -m src.evaluate --data data/processed --model models/logistic_model.joblib
-
-Tips and notes
-- If a script expects a filename that differs from what you downloaded, either rename the CSVs in data/raw/ or update the filename references inside src/preprocess.py.
-- The 5‑fold cross‑validation used for the reported experiments trades off runtime vs. stability; for final model training consider increasing folds if computational resources allow.
-- Keep data/ listed in .gitignore to avoid committing sensitive or large files.
 
 Summary of results
 ------------------
@@ -212,13 +149,7 @@ Interpretation
 --------------
 - The tuned logistic regression and gradient boosting models substantially improved over the baseline logistic regression. The final ensemble delivered a small uplift over the single best model; inspect feature importances and calibration to assess practical utility before deployment.
 
-Recommendations / notes
------------------------
-- Keep data/ listed in .gitignore to avoid committing sensitive or large files.
-- Pin versions in requirements.txt (NumPy==2.3.4, scikit-learn==1.5.1) so others can reproduce results.
-- Add a brief Methods section describing preprocessing, resampling, and evaluation metrics (5‑fold CV used for experiments reported).
-- Document hyperparameters and cross-validation scheme used for final models (best params, folds, random seed).
-- Add a small "How to use" section that explains how to run a script to get the final model predictions and where outputs are saved (see above).
+
 
 Contributors
 ------------

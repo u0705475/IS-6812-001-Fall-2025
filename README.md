@@ -1,5 +1,5 @@
 ```markdown
-# MKT6600 — Home Credit Capstone
+# IS 6812-001 Fall 2025 — Home Credit Capstone
 
 Short description
 -----------------
@@ -31,7 +31,7 @@ Prerequisites
 Setup — local
 -------------
 1. Clone the repo:
-   git clone https://github.com/u0705475/MKT6600.git
+   git clone https://github.com/u0705475/IS-6812-001-Fall-2025
 
 2. Create and activate a virtual environment (Windows example shown; adapt to your OS if different):
    - Create venv:
@@ -41,9 +41,6 @@ Setup — local
      or (Windows CMD):
      .venv\Scripts\activate.bat
 
-   If you prefer conda:
-     conda create -n mkt6600 python=3.8
-     conda activate mkt6600
 
 3. Install dependencies:
    - If a requirements.txt file exists, install with:
